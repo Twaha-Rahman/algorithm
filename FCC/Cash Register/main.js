@@ -59,16 +59,83 @@ function totalMoney(cid) {
 // }
 
 function isChangePossible(changeTarget, cid) {
-  const pennyValue = 0.01;
-  const nickelValue = 0.05;
-  const dimeValue = 0.1;
-  const quarterValue = 0.25;
+  let changeTargetCounting = changeTarget;
 
-  let totalDollar = 0;
+  let currencyAndThierValuesArr = [];
 
-  cid.forEach((currency) => {});
+  const reversedArr = cid.reverse();
 
-  return 5;
+  // we'll try to get change target to zero
+
+  reversedArr.forEach((currency) => {
+    if (changeTargetCounting === 0) {
+      return;
+    }
+
+    const currencyValue = {
+      'ONE HUNDRED': 100,
+      TWENTY: 20,
+      TEN: 10,
+      FIVE: 5,
+      ONE: 1,
+      QUARTER: 0.25,
+      DIME: 0.1,
+      NICKEL: 0.05,
+      PENNY: 0.01,
+    };
+
+    const singleCurrencyValue = currencyValue[currency[0]];
+
+    const mathRes = changeTarget - singleCurrencyValue;
+
+    if (mathRes < 0) {
+      return;
+    }
+
+    const currencyQuantityInString = (currency[1] / singleCurrencyValue).toPrecision(5);
+    const currencyQuantity = parseFloat(currencyQuantityInString);
+
+    let valueInCurrency = 0;
+
+    let index = currencyQuantity;
+    do {
+      const value = index * singleCurrencyValue;
+      let resAfterSubtraction = changeTarget - value;
+      if (resAfterSubtraction >= 0) {
+        valueInCurrency = value;
+      }
+      index--;
+    } while (index < index);
+
+    // currencyQuantity.forEach((times) => {
+    //   const value = times * singleCurrencyValue;
+    //   const resAfterSubtraction = changeTarget - value;
+    //   if (resAfterSubtraction < 0) {
+    //     valueInCurrency = value;
+    //   }
+    // });
+    // changeTargetCounting = changeTargetCounting - valueInCurrency;
+    // if (changeTargetCounting === 0) {
+    //   console.log("got 'em");
+    // }
+
+    currencyAndThierValuesArr.push([currency[0], valueInCurrency]);
+  });
+  console.log(currencyAndThierValuesArr, changeTarget);
+
+  let includlesValue = false;
+
+  currencyAndThierValuesArr.forEach((pairArr) => {
+    if (pairArr[1] !== 0) {
+      includlesValue = true;
+    }
+  });
+
+  if (includlesValue) {
+    return currencyAndThierValuesArr;
+  } else {
+    return false;
+  }
 }
 
 function checkCashRegister(price, cash, cid) {
@@ -79,7 +146,12 @@ function checkCashRegister(price, cash, cid) {
     return { status: 'INSUFFICIENT_FUNDS', change: [] };
   }
   const changeStat = isChangePossible(change, cid);
-  console.log(changeStat, change);
+
+  if (changeStat) {
+    // process
+  } else {
+    return { status: 'INSUFFICIENT_FUNDS', change: [] };
+  }
 }
 
 // console.log(
@@ -119,17 +191,7 @@ console.log(
     ['TWENTY', 60],
     ['ONE HUNDRED', 100],
   ]),
-  checkCashRegister(19.5, 20, [
-    ['PENNY', 0.01],
-    ['NICKEL', 0],
-    ['DIME', 0],
-    ['QUARTER', 0],
-    ['ONE', 0],
-    ['FIVE', 0],
-    ['TEN', 0],
-    ['TWENTY', 0],
-    ['ONE HUNDRED', 0],
-  ]),
+
   checkCashRegister(19.5, 20, [
     ['PENNY', 0.01],
     ['NICKEL', 0],
