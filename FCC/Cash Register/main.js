@@ -8,131 +8,112 @@ function totalMoney(cid) {
   return totalDollar;
 }
 
-// function convertToCurrencyArrWithType(cid) {
-//   const modifiedArr = [];
-
-//   cid.forEach((currency) => {
-//     switch (currency[0]) {
-//       case 'ONE HUNDRED':
-//         modifiedArr.push([currency[0], currency[1], 1]);
-//         break;
-
-//       case 'TWENTY':
-//         modifiedArr.push([currency[0], currency[1], 2]);
-//         break;
-//       case 'TEN':
-//         modifiedArr.push([currency[0], currency[1], 3]);
-//         break;
-//       case 'FIVE':
-//         modifiedArr.push([currency[0], currency[1], 4]);
-//         break;
-//       case 'ONE':
-//         modifiedArr.push([currency[0], currency[1], 5]);
-//         break;
-//       case 'QUARTER':
-//         modifiedArr.push([currency[0], currency[1], 6]);
-//         break;
-//       case 'DIME':
-//         modifiedArr.push([currency[0], currency[1], 7]);
-//         break;
-//       case 'NICKEL':
-//         modifiedArr.push([currency[0], currency[1], 8]);
-//         break;
-//       case 'PENNY':
-//         modifiedArr.push([currency[0], currency[1], 9]);
-//         break;
-//     }
-//   });
-
-//   console.log(modifiedArr);
-
-//   return modifiedArr;
-// }
-
-// function sortFromHighestToLowest(cid) {
-//   // ONE HUNDRED > TWENTY > TEN > FIVE > ONE
-//   // QUARTER > DIME > NICKEL > PENNY
-
-//   const withType = convertToCurrencyArrWithType(cid);
-
-//   cid.forEach((currency) => {});
-// }
-
 function isChangePossible(changeTarget, cid) {
-  let changeTargetCounting = changeTarget;
+  const currencyValue = {
+    'ONE HUNDRED': 100,
+    TWENTY: 20,
+    TEN: 10,
+    FIVE: 5,
+    ONE: 1,
+    QUARTER: 0.25,
+    DIME: 0.1,
+    NICKEL: 0.05,
+    PENNY: 0.01,
+  };
 
   let currencyAndThierValuesArr = [];
 
   const reversedArr = cid.reverse();
 
+  const usedCurrencies = [];
+  reversedArr.forEach(([type, value]) => {
+    // loops for each currency
+    const valuePerCurrency = currencyValue[type];
+    const quantity = value / valuePerCurrency;
+
+    let timesCurrency = 0;
+    let currencyInValue = 0;
+
+    for (let times = 1; times < quantity + 1; times++) {
+      const multipliedValue = parseFloat((times * valuePerCurrency).toFixed(5));
+
+      const subtractedValue = changeTarget - multipliedValue;
+
+      if (subtractedValue >= 0) {
+        // continue....store the amount and value
+        timesCurrency = times;
+        currencyInValue = multipliedValue;
+      }
+
+      //console.log(`${times} loop and value ${multipliedValue}`);
+    }
+
+    usedCurrencies.push([type, timesCurrency, currencyInValue]);
+
+    //console.warn(`Currency amount ${timesCurrency}X`);
+
+    //console.log(valuePerCurrency, quantity);
+  });
+
+  //console.log('New Info : ', usedCurrencies);
+
   // we'll try to get change target to zero
 
-  reversedArr.forEach((currency) => {
-    if (changeTargetCounting === 0) {
-      return;
-    }
+  let changeTargetContinuosDecrement = changeTarget;
 
-    const currencyValue = {
-      'ONE HUNDRED': 100,
-      TWENTY: 20,
-      TEN: 10,
-      FIVE: 5,
-      ONE: 1,
-      QUARTER: 0.25,
-      DIME: 0.1,
-      NICKEL: 0.05,
-      PENNY: 0.01,
-    };
+  let returnArr = [];
 
-    const singleCurrencyValue = currencyValue[currency[0]];
+  usedCurrencies.forEach(([type, times, value]) => {
+    const valuePerCurrency = currencyValue[type];
+    const quantity = value / valuePerCurrency;
 
-    const mathRes = changeTarget - singleCurrencyValue;
+    let count = 1;
 
-    if (mathRes < 0) {
-      return;
-    }
+    let nonNegativeValue = 0;
 
-    const currencyQuantityInString = (currency[1] / singleCurrencyValue).toPrecision(5);
-    const currencyQuantity = parseFloat(currencyQuantityInString);
+    while (count < times + 1) {
+      // console.log(`Looped ${times}x for ${type}`);
 
-    let valueInCurrency = 0;
+      const multipliedValue = parseFloat((count * valuePerCurrency).toFixed(5));
 
-    let index = currencyQuantity;
-    do {
-      const value = index * singleCurrencyValue;
-      let resAfterSubtraction = changeTarget - value;
-      if (resAfterSubtraction >= 0) {
-        valueInCurrency = value;
+      //changeTargetContinuosDecrement = changeTargetContinuosDecrement - multipliedValue;
+
+      const valueAfterSubtraction = changeTargetContinuosDecrement - valuePerCurrency;
+      //console.log(parseFloat(changeTargetContinuosDecrement.toFixed(5)), valuePerCurrency);
+
+      if (valueAfterSubtraction >= 0) {
+        nonNegativeValue = multipliedValue;
+        changeTargetContinuosDecrement = parseFloat(changeTargetContinuosDecrement.toFixed(5)) - valuePerCurrency;
       }
-      index--;
-    } while (index < index);
 
-    // currencyQuantity.forEach((times) => {
-    //   const value = times * singleCurrencyValue;
-    //   const resAfterSubtraction = changeTarget - value;
-    //   if (resAfterSubtraction < 0) {
-    //     valueInCurrency = value;
-    //   }
-    // });
-    // changeTargetCounting = changeTargetCounting - valueInCurrency;
-    // if (changeTargetCounting === 0) {
-    //   console.log("got 'em");
-    // }
+      count++;
+    }
 
-    currencyAndThierValuesArr.push([currency[0], valueInCurrency]);
+    returnArr.push([type, nonNegativeValue]);
   });
-  console.log(currencyAndThierValuesArr, changeTarget);
 
+  if (changeTargetContinuosDecrement !== 0) {
+    return false;
+  }
+
+  // console.log(returnArr);
+
+  // const toAdd = currencyValue[returnArr[returnArr.length - 1][0]];
+  // returnArr[returnArr.length - 1][1] = returnArr[returnArr.length - 1][1] + toAdd;
+
+  //console.log(returnArr);
+
+  //check if all currencies are 0 or not
   let includlesValue = false;
 
-  currencyAndThierValuesArr.forEach((pairArr) => {
+  returnArr.forEach((pairArr) => {
     if (pairArr[1] !== 0) {
       includlesValue = true;
     }
   });
 
   if (includlesValue) {
-    return currencyAndThierValuesArr;
+    return returnArr;
   } else {
     return false;
   }
@@ -148,25 +129,23 @@ function checkCashRegister(price, cash, cid) {
   const changeStat = isChangePossible(change, cid);
 
   if (changeStat) {
-    // process
+    console.log(changeStat);
+    if (JSON.stringify(cid) === JSON.stringify(changeStat)) {
+      return { status: 'CLOSED', change: changeStat.reverse() };
+    }
+
+    const toReturn = [];
+    changeStat.forEach((pairArr) => {
+      if (pairArr[1] !== 0) {
+        toReturn.push(pairArr);
+      }
+    });
+
+    return { status: 'OPEN', change: toReturn };
   } else {
     return { status: 'INSUFFICIENT_FUNDS', change: [] };
   }
 }
-
-// console.log(
-//   sortFromHighestToLowest([
-//     ['PENNY', 0.5],
-//     ['NICKEL', 0],
-//     ['DIME', 0],
-//     ['QUARTER', 0],
-//     ['ONE', 0],
-//     ['FIVE', 0],
-//     ['TEN', 0],
-//     ['TWENTY', 0],
-//     ['ONE HUNDRED', 0],
-//   ])
-// );
 
 console.log(
   checkCashRegister(19.5, 20, [
@@ -192,17 +171,28 @@ console.log(
     ['ONE HUNDRED', 100],
   ]),
 
-  checkCashRegister(19.5, 20, [
-    ['PENNY', 0.01],
-    ['NICKEL', 0],
-    ['DIME', 0],
-    ['QUARTER', 0],
-    ['ONE', 1],
-    ['FIVE', 0],
-    ['TEN', 0],
-    ['TWENTY', 0],
-    ['ONE HUNDRED', 0],
-  ]),
+  // checkCashRegister(19.5, 20, [
+  //   ['PENNY', 0.01],
+  //   ['NICKEL', 0],
+  //   ['DIME', 0],
+  //   ['QUARTER', 0],
+  //   ['ONE', 0],
+  //   ['FIVE', 0],
+  //   ['TEN', 0],
+  //   ['TWENTY', 0],
+  //   ['ONE HUNDRED', 0],
+  // ]),
+  // checkCashRegister(19.5, 20, [
+  //   ['PENNY', 0.01],
+  //   ['NICKEL', 0],
+  //   ['DIME', 0],
+  //   ['QUARTER', 0],
+  //   ['ONE', 1],
+  //   ['FIVE', 0],
+  //   ['TEN', 0],
+  //   ['TWENTY', 0],
+  //   ['ONE HUNDRED', 0],
+  // ]),
   checkCashRegister(19.5, 20, [
     ['PENNY', 0.5],
     ['NICKEL', 0],
